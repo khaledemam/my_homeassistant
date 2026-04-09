@@ -1,0 +1,27 @@
+# Basic system sensors and logging.
+logger:
+  default: critical
+  logs:
+    homeassistant.core: fatal
+
+tts:
+  - platform: google_translate
+
+sensor:
+  - platform: sql
+    scan_interval: 600
+    queries:
+      - name: Database Size
+        query: "SELECT ROUND(page_count * page_size,1)/1000000 as size FROM pragma_page_count(), pragma_page_size();"
+        column: size
+        unit_of_measurement: MB
+
+  - platform: time_date
+    display_options:
+      - time
+      - date
+      - date_time
+      - date_time_utc
+      - date_time_iso
+      - time_date
+      - time_utc

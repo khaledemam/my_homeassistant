@@ -18,3 +18,5 @@ config/*.db-*
 config/tts/
 mosquitto/data/
 mosquitto/log/
+
+backup-review/

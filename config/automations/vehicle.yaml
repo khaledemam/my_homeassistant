@@ -1,0 +1,42 @@
+- id: kona_preheat_at_work
+  alias: Kona preheat at work
+  description: Legacy car preheat routine kept as a disabled migration candidate.
+  initial_state: false
+  trigger:
+    - platform: numeric_state
+      entity_id: weather.buienradar_2
+      attribute: temperature
+      above: -10
+      below: 10
+  condition:
+    - condition: time
+      after: '14:00:00'
+      before: '18:00:00'
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: numeric_state
+      entity_id: sensor.kona_car_battery_level
+      above: 50
+      below: 100
+    - condition: state
+      entity_id: binary_sensor.kona_ev_battery_plug
+      state: 'on'
+  action:
+    - service: kia_uvo.start_climate
+      data:
+        duration: 5
+        climate: true
+        temperature: 21
+        defrost: true
+        heating: false
+        device_id: bac5b1c17593083c4a6c6ae45d048104
+    - delay:
+        hours: 1
+    - service: kia_uvo.stop_climate
+      data:
+        device_id: bac5b1c17593083c4a6c6ae45d048104
+  mode: single

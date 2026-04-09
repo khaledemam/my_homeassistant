@@ -1,0 +1,106 @@
+# Energy, utility meters, and derived totals.
+recorder:
+  exclude:
+    domains:
+      - device_tracker
+      - media_player
+      - uptime
+      - time_date
+      - automation
+      - worldclock
+    entity_globs:
+      - sensor.clock*
+      - sensor.date*
+      - sensor.glances*
+      - sensor.load_*m
+      - sensor.time*
+      - sensor.uptime*
+    entities:
+      - sensor.home_assistant_v2_db
+      - sensor.memory_free
+      - sensor.memory_use
+      - sensor.memory_use_percent
+      - sensor.processor_use
+    event_types:
+      - lovelace_updated
+
+utility_meter:
+  daily_energy_offpeak:
+    source: sensor.electricity_meter_energy_consumption_tarif_1
+    name: Daily Energy (Offpeak)
+    cycle: daily
+  daily_energy_peak:
+    source: sensor.electricity_meter_energy_consumption_tarif_2
+    name: Daily Energy (Peak)
+    cycle: daily
+  daily_gas:
+    source: sensor.gas_meter_gas_consumption_2
+    name: Daily Gas
+    cycle: daily
+  daily_energy_production_offpeak:
+    source: sensor.electricity_meter_energy_production_tarif_1
+    name: Daily Energy Production (Offpeak)
+    cycle: daily
+  daily_energy_production_peak:
+    source: sensor.electricity_meter_energy_production_tarif_2
+    name: Daily Energy Production (Peak)
+    cycle: daily
+  monthly_energy_offpeak:
+    source: sensor.electricity_meter_energy_consumption_tarif_1
+    name: Monthly Energy (Offpeak)
+    cycle: monthly
+  monthly_energy_peak:
+    source: sensor.electricity_meter_energy_consumption_tarif_2
+    name: Monthly Energy (Peak)
+    cycle: monthly
+  monthly_energy_production_offpeak:
+    source: sensor.electricity_meter_energy_production_tarif_1
+    name: Monthly Energy Production (Offpeak)
+    cycle: monthly
+  monthly_energy_production_peak:
+    source: sensor.electricity_meter_energy_production_tarif_2
+    name: Monthly Energy Production (Peak)
+    cycle: monthly
+  monthly_gas:
+    source: sensor.gas_meter_gas_consumption_2
+    name: Monthly Gas
+    cycle: monthly
+
+template:
+  - sensor:
+      - name: Daily Energy Total
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >-
+          {% if is_number(states('sensor.daily_energy_offpeak')) and is_number(states('sensor.daily_energy_peak')) %}
+            {{ states('sensor.daily_energy_offpeak') | float + states('sensor.daily_energy_peak') | float }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+      - name: Daily Energy Production Total
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >-
+          {% if is_number(states('sensor.daily_energy_production_offpeak')) and is_number(states('sensor.daily_energy_production_peak')) %}
+            {{ states('sensor.daily_energy_production_offpeak') | float + states('sensor.daily_energy_production_peak') | float }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+      - name: Monthly Energy Total
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >-
+          {% if is_number(states('sensor.monthly_energy_offpeak')) and is_number(states('sensor.monthly_energy_peak')) %}
+            {{ states('sensor.monthly_energy_offpeak') | float + states('sensor.monthly_energy_peak') | float }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+      - name: Monthly Energy Production Total
+        device_class: energy
+        unit_of_measurement: kWh
+        state: >-
+          {% if is_number(states('sensor.monthly_energy_production_offpeak')) and is_number(states('sensor.monthly_energy_production_peak')) %}
+            {{ states('sensor.monthly_energy_production_offpeak') | float + states('sensor.monthly_energy_production_peak') | float }}
+          {% else %}
+            {{ none }}
+          {% endif %}

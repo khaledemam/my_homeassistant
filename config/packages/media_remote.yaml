@@ -1,0 +1,9 @@
+# Small remote-controlled media and lighting helpers.
+light:
+  - platform: template
+    lights:
+      bookshelf:
+        turn_on:
+          service: script.bookshelf_on
+        turn_off:
+          service: script.bookshelf_off

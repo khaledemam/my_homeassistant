@@ -1,0 +1,22 @@
+- id: home_assistant_auto_update
+  alias: Home Assistant auto-update
+  description: Disabled by default until the rebuilt system is stable.
+  initial_state: false
+  use_blueprint:
+    path: EdwardTFN/auto-update-home-assistant.yaml
+    input:
+      update_exclusions:
+        - false
+      schedule_isoweekdays:
+        - '5'
+      actions_pre_update:
+        - action: notify.alexa_media_echo_dot_new_gen
+          data:
+            message: Home Assistant is updating
+        - action: notify.mobile_app_sm_a136b
+          data:
+            message: Home Assistant is updating
+      actions_pos_update:
+        - action: notify.alexa_media_echo_dot_new_gen
+          data:
+            message: Home Assistant is updated
