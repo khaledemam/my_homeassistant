@@ -1,0 +1,121 @@
+title: Solar
+views:
+  - title: Solar
+    path: solar
+    icon: mdi:solar-power
+    badges: []
+    cards:
+      - type: grid
+        title: Solar Overview
+        columns: 2
+        square: false
+        cards:
+          - type: gauge
+            entity: sensor.envoy_122311014773_current_power_production
+            name: Live Production
+            min: 0
+            max: 3
+            needle: true
+            severity:
+              green: 1.5
+              yellow: 0.4
+              red: 0
+
+          - type: entity
+            entity: sensor.envoy_122311014773_energy_production_today
+            name: Today
+
+          - type: entity
+            entity: sensor.enphase_solar_7_day_average
+            name: 7 Day Average
+
+          - type: entity
+            entity: sensor.enphase_solar_today_vs_7_day_average
+            name: Today vs Average
+
+      - type: conditional
+        conditions:
+          - entity: binary_sensor.enphase_inverter_imbalance_alert
+            state: "on"
+        card:
+          type: markdown
+          title: Solar Attention
+          content: >
+            Inverter output is uneven while the array is producing. Check the
+            individual inverter tiles below for shade, dirt, or a silent panel.
+
+      - type: history-graph
+        title: Live Production
+        hours_to_show: 24
+        entities:
+          - sensor.envoy_122311014773_current_power_production
+
+      - type: statistics-graph
+        title: Daily Solar Trend
+        chart_type: bar
+        period: day
+        days_to_show: 14
+        stat_types:
+          - change
+        entities:
+          - sensor.envoy_122311014773_energy_production_today
+
+      - type: entities
+        title: Inverter Health
+        show_header_toggle: false
+        entities:
+          - entity: sensor.enphase_inverter_total_power
+            name: Total Inverter Power
+          - entity: sensor.enphase_active_inverters
+            name: Active Inverters
+          - entity: sensor.enphase_inverter_average_power
+            name: Average Active Inverter
+          - entity: sensor.enphase_inverter_imbalance
+            name: Inverter Imbalance
+          - entity: binary_sensor.enphase_inverter_imbalance_alert
+            name: Imbalance Alert
+
+      - type: grid
+        title: Microinverters
+        columns: 4
+        square: false
+        cards:
+          - type: tile
+            entity: sensor.inverter_482316030201
+            name: "0201"
+          - type: tile
+            entity: sensor.inverter_482316031047
+            name: "1047"
+          - type: tile
+            entity: sensor.inverter_482316031052
+            name: "1052"
+          - type: tile
+            entity: sensor.inverter_482316031085
+            name: "1085"
+          - type: tile
+            entity: sensor.inverter_482316031090
+            name: "1090"
+          - type: tile
+            entity: sensor.inverter_482316031093
+            name: "1093"
+          - type: tile
+            entity: sensor.inverter_482316031110
+            name: "1110"
+          - type: tile
+            entity: sensor.inverter_482316031163
+            name: "1163"
+
+      - type: grid
+        title: Production Totals
+        columns: 3
+        square: false
+        cards:
+          - type: entity
+            entity: sensor.envoy_122311014773_energy_production_today
+            name: Today
+          - type: entity
+            entity: sensor.envoy_122311014773_energy_production_last_seven_days
+            name: Last 7 Days
+          - type: entity
+            entity: sensor.envoy_122311014773_lifetime_energy_production
+            name: Lifetime

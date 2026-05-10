@@ -14,6 +14,7 @@ These are core to the house and likely worth bringing back relatively early.
   Important for electricity and gas readings.
 - `enphase_envoy`
   Important if you want solar production and Energy dashboard continuity.
+  Current derived sensors and dashboard notes live in `docs/enphase-solar-dashboard.md`.
 - `evohome`
   Important for heating, but it should be added fresh during setup.
 - `mobile_app`

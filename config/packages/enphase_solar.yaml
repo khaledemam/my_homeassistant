@@ -1,0 +1,140 @@
+# Enphase Envoy solar production and microinverter health helpers.
+template:
+  - sensor:
+      - name: Enphase Solar 7 Day Average
+        unique_id: enphase_solar_7_day_average
+        device_class: energy
+        state_class: measurement
+        unit_of_measurement: kWh
+        icon: mdi:calendar-week
+        state: >-
+          {% set week = states('sensor.envoy_122311014773_energy_production_last_seven_days') %}
+          {% if is_number(week) %}
+            {{ ((week | float) / 7) | round(2) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: Enphase Solar Today vs 7 Day Average
+        unique_id: enphase_solar_today_vs_7_day_average
+        state_class: measurement
+        unit_of_measurement: "%"
+        icon: mdi:percent
+        state: >-
+          {% set today = states('sensor.envoy_122311014773_energy_production_today') %}
+          {% set week = states('sensor.envoy_122311014773_energy_production_last_seven_days') %}
+          {% if is_number(today) and is_number(week) and (week | float) > 0 %}
+            {{ ((today | float) / ((week | float) / 7) * 100) | round(0) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: Enphase Inverter Total Power
+        unique_id: enphase_inverter_total_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        icon: mdi:solar-panel
+        state: >-
+          {% set inverter_entities = [
+            'sensor.inverter_482316030201',
+            'sensor.inverter_482316031047',
+            'sensor.inverter_482316031052',
+            'sensor.inverter_482316031085',
+            'sensor.inverter_482316031090',
+            'sensor.inverter_482316031093',
+            'sensor.inverter_482316031110',
+            'sensor.inverter_482316031163'
+          ] %}
+          {% set values = inverter_entities | map('states') | select('is_number') | map('float') | list %}
+          {% if values | count > 0 %}
+            {{ values | sum | round(0) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: Enphase Active Inverters
+        unique_id: enphase_active_inverters
+        state_class: measurement
+        icon: mdi:counter
+        state: >-
+          {% set inverter_entities = [
+            'sensor.inverter_482316030201',
+            'sensor.inverter_482316031047',
+            'sensor.inverter_482316031052',
+            'sensor.inverter_482316031085',
+            'sensor.inverter_482316031090',
+            'sensor.inverter_482316031093',
+            'sensor.inverter_482316031110',
+            'sensor.inverter_482316031163'
+          ] %}
+          {% set values = inverter_entities | map('states') | select('is_number') | map('float') | list %}
+          {% if values | count > 0 %}
+            {{ values | select('gt', 0) | list | count }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: Enphase Inverter Average Power
+        unique_id: enphase_inverter_average_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        icon: mdi:chart-bell-curve
+        state: >-
+          {% set inverter_entities = [
+            'sensor.inverter_482316030201',
+            'sensor.inverter_482316031047',
+            'sensor.inverter_482316031052',
+            'sensor.inverter_482316031085',
+            'sensor.inverter_482316031090',
+            'sensor.inverter_482316031093',
+            'sensor.inverter_482316031110',
+            'sensor.inverter_482316031163'
+          ] %}
+          {% set values = inverter_entities | map('states') | select('is_number') | map('float') | list %}
+          {% set active_values = values | select('gt', 0) | list %}
+          {% if active_values | count > 0 %}
+            {{ ((active_values | sum) / (active_values | count)) | round(0) }}
+          {% elif values | count > 0 %}
+            0
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+      - name: Enphase Inverter Imbalance
+        unique_id: enphase_inverter_imbalance
+        state_class: measurement
+        unit_of_measurement: "%"
+        icon: mdi:scale-unbalanced
+        state: >-
+          {% set inverter_entities = [
+            'sensor.inverter_482316030201',
+            'sensor.inverter_482316031047',
+            'sensor.inverter_482316031052',
+            'sensor.inverter_482316031085',
+            'sensor.inverter_482316031090',
+            'sensor.inverter_482316031093',
+            'sensor.inverter_482316031110',
+            'sensor.inverter_482316031163'
+          ] %}
+          {% set values = inverter_entities | map('states') | select('is_number') | map('float') | list %}
+          {% if values | count > 1 and (values | max) > 0 %}
+            {{ (((values | max) - (values | min)) / (values | max) * 100) | round(1) }}
+          {% elif values | count > 0 %}
+            0
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+  - binary_sensor:
+      - name: Enphase Inverter Imbalance Alert
+        unique_id: enphase_inverter_imbalance_alert
+        device_class: problem
+        state: >-
+          {% set production_kw = states('sensor.envoy_122311014773_current_power_production') | float(0) %}
+          {% set imbalance = states('sensor.enphase_inverter_imbalance') | float(0) %}
+          {% set active_inverters = states('sensor.enphase_active_inverters') | int(0) %}
+          {{ production_kw > 0.3 and active_inverters >= 4 and imbalance > 35 }}
+        attributes:
+          threshold: "More than 35% imbalance while the array is producing above 0.3 kW"
