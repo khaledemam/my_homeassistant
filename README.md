@@ -27,6 +27,7 @@ Those are ignored in `.gitignore`.
 - `config/`: Home Assistant YAML files we want to keep under version control
 - `config/dashboards/`: YAML dashboards that should be reproducible after reinstall
 - `config/packages/`: package-level helpers, utility meters, and integration logic
+- `archive/`: sanitized reference snapshots from older Home Assistant backups
 - `docs/install-plan.md`: practical setup steps for the Home Assistant OS machine
 - `docs/home-notes.md`: house-specific notes, devices, and integration ideas
 

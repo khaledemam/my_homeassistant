@@ -1,0 +1,25 @@
+bookshelf_on:
+  alias: bookshelf_on
+  sequence:
+  - service: remote.send_command
+    data:
+      device: bookshelf
+      command: power_on
+    target:
+      area_id: dining_room
+      entity_id: remote.remote_bookshelf
+  mode: single
+bookshelf_off:
+  alias: bookshelf_off
+  sequence:
+  - service: remote.send_command
+    data:
+      device: bookshelf
+      command: power_off
+      num_repeats: 1
+      delay_secs: 0.4
+      hold_secs: 0
+    target:
+      area_id: dining_room
+      entity_id: remote.remote_bookshelf
+  mode: single

@@ -1,0 +1,96 @@
+- id: '1584099444108'
+  alias: DeebotWater
+  description: ''
+  trigger:
+  - entity_id: input_select.water_level
+    platform: state
+  condition: []
+  action:
+  - service: vacuum.send_command
+    data_template:
+      command: set_water_level
+      entity_id: vacuum.e0001057017609560622
+      params:
+        level: '{{states.input_select.water_level.state}}'
+- id: '1698747962059'
+  alias: Daily Gas Consumption
+  description: Cycle gas readings daily
+  trigger:
+  - platform: time
+    at: 00:00:00
+  condition: []
+  action:
+  - service: input_number.set_value
+    data:
+      value: '{{ states.sensor.power_consumption_normal.state }}'
+  mode: single
+- id: '1733931025501'
+  alias: Home Assistant Auto-update
+  description: ''
+  use_blueprint:
+    path: EdwardTFN/auto-update-home-assistant.yaml
+    input:
+      update_exclusions:
+      - false
+      schedule_isoweekdays:
+      - '5'
+      actions_pre_update:
+      - action: notify.alexa_media_echo_dot_new_gen
+        data:
+          message: Homeassistant is updating
+      - action: notify.mobile_app_sm_a136b
+        metadata: {}
+        data:
+          message: Homeassistant is updating
+      actions_pos_update:
+      - action: notify.alexa_media_echo_dot_new_gen
+        metadata: {}
+        data:
+          message: Homeassistant is updated
+- id: '1733932169174'
+  alias: Kona warming at inepro
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - weather.buienradar_2
+    attribute: temperature
+    above: -10
+    below: 10
+  conditions:
+  - condition: time
+    after: '14:00:00'
+    before: '18:00:00'
+    weekday:
+    - thu
+    - wed
+    - tue
+    - mon
+    - fri
+  - condition: numeric_state
+    entity_id: sensor.kona_car_battery_level
+    above: '50'
+    below: 100
+  - condition: state
+    entity_id: binary_sensor.kona_ev_battery_plug
+    state: 'on'
+  actions:
+  - action: kia_uvo.start_climate
+    metadata: {}
+    data:
+      duration: 5
+      climate: true
+      temperature: 21
+      defrost: true
+      heating: false
+      device_id: bac5b1c17593083c4a6c6ae45d048104
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - action: kia_uvo.stop_climate
+    metadata: {}
+    data:
+      device_id: bac5b1c17593083c4a6c6ae45d048104
+  mode: single

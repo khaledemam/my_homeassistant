@@ -1,0 +1,269 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+homeassistant:
+  allowlist_external_dirs:
+    - /config
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+# Example configuration.yaml entry
+evohome:
+  username: !secret legacy_username
+  password: !secret legacy_password
+
+
+logger:
+  default: critical
+  logs:
+    # log level for HA core
+    homeassistant.core: fatal
+
+recorder:
+  exclude:
+    domains:
+      - device_tracker
+      - media_player
+      - uptime
+      - time_date
+      - automation
+      - worldclock
+    entity_globs:
+      - sensor.clock*
+      - sensor.date*
+      - sensor.glances*
+      - sensor.load_*m
+      - sensor.time*
+      - sensor.uptime*
+    entities:
+      #- camera.front_door
+      - sensor.home_assistant_v2_db
+      - sensor.memory_free
+      - sensor.memory_use
+      - sensor.memory_use_percent
+      - sensor.processor_use
+      #- weather.openweathermap
+    event_types:
+      - state_changed
+      - lovelace_updated
+      - hacs*
+
+sensor:
+
+  - platform: sql
+    scan_interval: 600
+    queries:
+      - name: Database Size
+        query: "SELECT ROUND(page_count * page_size,1)/1000000 as size FROM pragma_page_count(), pragma_page_size();"
+        column: "size"
+        unit_of_measurement: MB
+
+
+#  - platform: filesize
+#    file_paths:
+#      - /config/home-assistant_v2.db
+
+  - platform: solaredge_local
+    name: SolarEdge
+    ip_address: !secret legacy_host
+
+#  - platform: jumbo
+#    username: !secret legacy_username
+#    password: !secret legacy_password
+#    type: "both"
+
+
+#  - platform: p2000
+#    icon: mdi:fire-truck
+#    nolocation: true
+#    name: p2000
+#    regios: 10
+#    radius: 10000
+#    scan_interval: 10
+#    latitude: !secret legacy_latitude
+#    longitude: !secret legacy_longitude
+
+  - platform: afvalwijzer
+    provider: mijnafvalwijzer        # (required, default = mijnafvalwijzer) either choose mijnafvalwijzer, afvalstoffendienstkalender or rova
+    postal_code: !secret legacy_postal_code
+    street_number:  !secret legacy_street_number
+    suffix: ''                       # (optional, default = '')
+    exclude_pickup_today: true       # (optional, default = true) to take or not to take Today into account in the next pickup.
+    default_label: geen              # (optional, default = geen) label if no date found
+    id: ''                           # (optional, default = '') use if you'd like to have multiple waste pickup locations in HASS
+    exclude_list: ''                 # (optional, default = '') comma separated list of waste types (case ignored). F.e. "papier, gft"7
+
+# Example configuration.yaml entry with all entry types (delete/comment out as necessary)
+#  - platform: systemmonitor
+#    resources:
+#      - type: disk_use_percent
+#        arg: /config
+#      - type: disk_use
+#      - type: disk_free
+#      - type: memory_use_percent
+#      - type: memory_use
+#      - type: memory_free
+#      - type: swap_use_percent
+#      - type: swap_use
+#      - type: swap_free
+#      - type: load_1m
+#      - type: load_5m
+#      - type: load_15m
+#      - type: network_in
+#        arg: wlan0
+#      - type: network_out
+#        arg: wlan0
+#      - type: throughput_network_in
+#        arg: wlan0
+#      - type: throughput_network_out
+#        arg: wlan0
+#      - type: packets_in
+#        arg: wlan0
+#      - type: packets_out
+#        arg: wlan0
+#      - type: ipv4_address
+#        arg: wlan0
+#      - type: ipv6_address
+#        arg: wlan0
+#      - type: processor_use
+#      - type: processor_temperature
+#      - type: last_boot
+
+
+  - platform: time_date
+    display_options:
+      - 'time'
+      - 'date'
+      - 'date_time'
+      - 'date_time_utc'
+      - 'date_time_iso'
+      - 'time_date'
+      - 'time_utc'
+#      - 'beat'
+
+input_boolean:
+  waste_moved:
+    name: Waste has been moved
+    initial: 'off'
+    icon: mdi:delete-empty
+  waste_reminder:
+    name: Waste reminder enabled
+    initial: 'on'
+
+
+light:
+  - platform: template
+    lights:
+      bookshelf:
+        turn_on:
+          service: script.bookshelf_on
+        turn_off:
+          service: script.bookshelf_off
+
+#ecovacs:
+#  username: !secret legacy_username
+#  password: !secret legacy_password
+#  country: nl
+#  continent: ww
+
+utility_meter:
+  daily_energy_offpeak:
+    source: sensor.electricity_meter_energy_consumption_tarif_1
+    name: Daily Energy (Offpeak)
+    cycle: daily
+  daily_energy_peak:
+    source: sensor.electricity_meter_energy_consumption_tarif_2
+    name: Daily Energy (Peak)
+    cycle: daily
+  daily_gas:
+    source: sensor.gas_meter_gas_consumption_2
+    name: Daily Gas
+    cycle: daily
+
+  daily_energy_production_offpeak:
+    source: sensor.electricity_meter_energy_production_tarif_1
+    name: Daily Energy Production (Offpeak)
+    cycle: daily
+  daily_energy_production_peak:
+    source: sensor.electricity_meter_energy_production_tarif_2
+    name: Daily Energy Production (Peak)
+    cycle: daily
+
+
+  monthly_energy_offpeak:
+    source: sensor.electricity_meter_energy_consumption_tarif_1
+    name: Monthly Energy (Offpeak)
+    cycle: monthly
+  monthly_energy_peak:
+    source: sensor.electricity_meter_energy_consumption_tarif_2
+    name: Monthly Energy (Peak)
+    cycle: monthly
+
+  monthly_energy_production_offpeak:
+    source: sensor.electricity_meter_energy_production_tarif_1
+    name: Monthly Energy Production (Offpeak)
+    cycle: monthly
+  monthly_energy_production_peak:
+    source: sensor.electricity_meter_energy_production_tarif_2
+    name: Monthly Energy Production (Peak)
+    cycle: monthly
+
+
+
+  monthly_gas:
+    source: sensor.gas_meter_gas_consumption_2
+    name: Monthly Gas
+    cycle: monthly
+
+template:
+  - sensor:
+    - name: 'Daily Energy Total'
+      device_class: energy
+      unit_of_measurement: kWh
+      state: >
+        {% if is_number(states('sensor.daily_energy_offpeak')) and is_number(states('sensor.daily_energy_peak')) %}
+          {{ states('sensor.daily_energy_offpeak') | float + states('sensor.daily_energy_peak') | float }}
+        {% else %}
+          None
+        {% endif %}
+
+    - name: 'Daily Energy Production Total'
+      device_class: energy
+      unit_of_measurement: kWh
+      state: >
+        {% if is_number(states('sensor.daily_energy_production_offpeak')) and is_number(states('sensor.daily_energy_production_peak')) %}
+          {{ states('sensor.daily_energy_production_offpeak') | float + states('sensor.daily_energy_production_peak') | float }}
+        {% else %}
+          None
+        {% endif %}
+
+    - name: 'Monthly Energy Total'
+      device_class: energy
+      unit_of_measurement: kWh
+      state: >
+        {% if is_number(states('sensor.monthly_energy_offpeak')) and is_number(states('sensor.monthly_energy_peak')) %}
+          {{ states('sensor.monthly_energy_offpeak') | float + states('sensor.monthly_energy_peak') | float }}
+        {% else %}
+          None
+        {% endif %}
+
+    - name: 'Monthly Energy Production Total'
+      device_class: energy
+      unit_of_measurement: kWh
+      state: >
+        {% if is_number(states('sensor.monthly_energy_production_offpeak')) and is_number(states('sensor.monthly_energy_production_peak')) %}
+          {{ states('sensor.monthly_energy_production_offpeak') | float + states('sensor.monthly_energy_production_peak') | float }}
+        {% else %}
+          None
+        {% endif %}
